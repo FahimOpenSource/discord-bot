@@ -1,0 +1,10 @@
+
+    GATEWAY
+take care of all things gateway
+open a connection to the gateway   (connect)
+    then recieve hello 10 and Heartbeat (recieve)
+identify self with the token (send)
+ping or send Heartbeat
+resuming the session    (connect/send)
+sending messages related to the gateway eg Heartbeat, identify, connect
+receiving messages related to the gateway eg hello, ready 
