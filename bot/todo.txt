@@ -8,3 +8,7 @@ ping or send Heartbeat
 resuming the session    (connect/send)
 sending messages related to the gateway eg Heartbeat, identify, connect
 receiving messages related to the gateway eg hello, ready 
+
+
+where saving:
+-sequence no.

@@ -1,5 +1,5 @@
 
-from role import Select_role
+# from role import Select_role
 import json
 import requests
 from dotenv import load_dotenv
@@ -14,8 +14,11 @@ class Message():
         self.token = os.getenv("TOKEN")
 
     def create_message(self):
-        # before that check_msg()
+        # Before that check_msg()
         self.url = f"{API_URL}/channels/967526705088565248/messages"
+        # Make the url get channel id from Guild create payload
+
+        # Roles
         message = {
             "content": "Which platform do you play on?",
             "tts": False,
@@ -72,12 +75,12 @@ class Message():
 
         pass
     
-    def send_reply(self,event):
-        data = event["data"]
-        user = event["member"]["user"]
-        if data["component_type"] == 2:
-            role = data["custom_id"]
-            Select_role(role,user)
+    # def send_reply(self,event):
+    #     data = event["data"]
+    #     user = event["member"]["user"]
+    #     if data["component_type"] == 2:
+    #         role = data["custom_id"]
+    #         Select_role(role,user)
 
             # this means some one clicked on a botton to choose a role 
             #  select a role 

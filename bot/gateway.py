@@ -44,8 +44,8 @@ class Gateway:
                 res = json.loads(await ws.recv())
                 print(f"Responce: {res}")
                 gateway_event_handler = asyncio.create_task(self.gateway_event_handler(res))
-                await self()
-            except websockets.ConnectionClosedOK:
+                await gateway_event_handler
+            except websockets.ConnectionClosed:
                 resume_con = asyncio.create_task(self.resume(ws))
                 await resume_con
 
@@ -55,20 +55,20 @@ class Gateway:
             await self.message.put(msg)
             await asyncio.sleep(self.heartbeat / 1000)
 
-    # async def resume(self, ws):
-    #     ws.close(code=1000)
-    #     resume = {
-    #         "op": 6,
-    #         "d": {
-    #             "token": self.token,
-    #             "session_id": self.session_id,
-    #             "seq": 0,
-    #         }
-    #     }
-    #     #sequence number from last event recieved
-    #     await self.message.put(resume)
+    async def resume(self, ws):
+        ws.close(code=1000)
+        resume = {
+            "op": 6,
+            "d": {
+                "token": self.token,
+                "session_id": self.session_id,
+                "seq": 0,
+            }
+        }
+        #sequence number from last event recieved
+        await self.message.put(resume)
 
-    async def run(self):
+    def run(self):
         data = {
             "gateway_url": "wss://gateway.discord.gg/",
             "lib_name": "discord_bot"
@@ -107,27 +107,30 @@ class Gateway:
             info = get()
             if info["sequence"]:
                 if sequence_no > info["sequence"]:
-                    info["sequence"] = sequence_no
-                    save(info)
+                    data = {
+                        "sequence": sequence_no
+                    }
+                    save(data)
             else:
-                info["sequence"] = sequence_no
-                save(info)
+                data = {
+                    "sequence": sequence_no
+                }
+                save(data)
                 # TODO: then maye be resume con.
             
         if event == "GUILD_CREATE":
             guild_id = res["d"]["id"]
-            info = get()
-            info["guild_id"] = guild_id
-            save(info)
+            data = { "guild_id": guild_id }
+            save(data)
 
         if event == "READY":
             session_id = res["d"]["session_id"]
-            info["session_id"] = session_id
-            save(info)
+            data = {"session_id":session_id}
+            save(data)
             msg.create_message()
 
         if event == "INTERACTION_CREATE":
-            msg.send_reply(self.res)
+            msg.send_reply(res)
 
 
 
