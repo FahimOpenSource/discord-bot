@@ -1,5 +1,5 @@
 
-# from role import Select_role
+from role import Role
 import json
 import requests
 from dotenv import load_dotenv
@@ -12,6 +12,7 @@ API_URL = "https://discord.com/api/v9"
 class Message():
     def __init__(self):
         self.token = os.getenv("TOKEN")
+        self.headers = {"Authorization": f"Bot {self.token}", "Content-Type": "application/json"}
 
     def create_message(self):
         # Before that check_msg()
@@ -64,24 +65,19 @@ class Message():
         }
         
         msg = json.dumps(message)
-        headers = {"Authorization": f"Bot {self.token}", "Content-Type": "application/json"}
-        res = requests.post(self.url,data=msg, headers=headers)
+        res = requests.post(self.url,data=msg, headers=self.headers)
         res = json.loads(res.text)
         
-        print(f'tttttttttttttt   {res}')
+        print(f'{res}\n')
 
 
     def check_msg(self):
 
         pass
     
-    # def send_reply(self,event):
-    #     data = event["data"]
-    #     user = event["member"]["user"]
-    #     if data["component_type"] == 2:
-    #         role = data["custom_id"]
-    #         Select_role(role,user)
-
+    def send_reply(self, event):
+        role = Role()
+        role.set_role(event)
             # this means some one clicked on a botton to choose a role 
             #  select a role 
             # return 

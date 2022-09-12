@@ -1,19 +1,65 @@
-# check if some one is has role , then change
-
 from info import get
-from message import API_URL
 from info import get, save
+from dotenv import load_dotenv
+import requests
+import json
+import os
 
-class Select_Role:
-    def __init__(self,role,user):
+load_dotenv()
+
+API_URL = "https://discord.com/api/v9"
+
+class Role:
+    def __init__(self):
         info = get()
         self.guild_id = info["guild_id"]
-        self.role = role
-        pass
-    # check if in role then remove
-    # else add to role
-    # check if role exists if not then make role
-    def get_role():
-        pass
+        self.token = os.getenv("TOKEN")
+        self.headers = {"Authorization": f"Bot {self.token}", "Content-Type": "application/json"}
 
+    def set_role(self, event):
 
+        #Get guild roles
+        url = f"{API_URL}/guilds/{self.guild_id}/roles"
+        res = requests.get(url, headers=self.headers)
+        print(f'{res.text}\n')
+        roles = json.loads(res.text)
+
+        #Check if roles include the given
+        id = event['d']['data']['custom_id']
+        for role in roles:
+            name = role["name"]
+            if name == id:
+                self.assign_role(event, role)
+            else:
+                #The role doesn't exist
+                #Send message : Role unavailable
+                pass
+    
+    def assign_role(self,event,role):
+        role_id = role['id']
+        user_id = event['d']['member']['user']['id']
+
+        #get member object 
+        url = f"{API_URL}/guilds/{self.guild_id}/members/{user_id}"
+        res = requests.get(url, headers=self.headers)
+        print(f'{res.text}\n')
+        member = json.loads(res.text)
+        print(f'nnnnnnnnnnnnn{role}\n')
+
+        #removing role
+        if role['id'] in member["roles"]:
+            url = f"{API_URL}/guilds/{self.guild_id}/members/{user_id}/roles/{role_id}"
+            res = requests.delete(url, headers=self.headers)
+            print(f'{res.text}\n')
+            assert res.status_code == 204
+            # send confirmation message through Message class
+            
+        else:
+            #this is adding role to user 
+            url = f"{API_URL}/guilds/{self.guild_id}/members/{user_id}/roles/{role_id}"
+            res = requests.put(url, headers=self.headers)
+            print(f'{res.text}\n')
+            assert res.status_code == 204
+            # send confirmation message through Message class
+        
+  

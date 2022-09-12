@@ -23,9 +23,10 @@ class Gateway:
         info = get()
         gateway_url = info["gateway_url"]
         async with websockets.connect(gateway_url) as websocket:
-            res = await websocket.recv()
-            print(f"Received: {res}")
-            gateway_event_handler = asyncio.create_task(self.gateway_event_handler(res))
+            event = await websocket.recv()
+            print(f'{event}\n')
+            event = json.loads(event)
+            gateway_event_handler = asyncio.create_task(self.gateway_event_handler(event))
             send = asyncio.create_task(self.send(websocket))
             recv = asyncio.create_task(self.recv(websocket))
             await gateway_event_handler
@@ -41,9 +42,10 @@ class Gateway:
     async def recv(self, ws):
         while True:
             try:
-                res = json.loads(await ws.recv())
-                print(f"Responce: {res}")
-                gateway_event_handler = asyncio.create_task(self.gateway_event_handler(res))
+                event = await ws.recv()
+                print(f'{event}\n')
+                event = json.loads(event)
+                gateway_event_handler = asyncio.create_task(self.gateway_event_handler(event))
                 await gateway_event_handler
             except websockets.ConnectionClosed:
                 resume_con = asyncio.create_task(self.resume(ws))
@@ -56,7 +58,7 @@ class Gateway:
             await asyncio.sleep(self.heartbeat / 1000)
 
     async def resume(self, ws):
-        ws.close(code=1000)
+        await ws.close(code=1000)
         resume = {
             "op": 6,
             "d": {
@@ -76,15 +78,15 @@ class Gateway:
         save(data)
         asyncio.run(self.connect())
     
-    async def gateway_event_handler(self, res):
-        event = res["t"]
+    async def gateway_event_handler(self, event):
+        event_name = event["t"]
         msg = Message()
 
-        if res["op"] == 10:
+        if event["op"] == 10:
             info = get()
 
             lib_name = info["lib_name"]
-            self.heartbeat = res["d"]["heartbeat_interval"]
+            self.heartbeat = event["d"]["heartbeat_interval"]
             ping = asyncio.create_task(self.ping())
             
             identity = {
@@ -102,35 +104,28 @@ class Gateway:
             await self.message.put(identity)
             await ping
 
-        sequence_no = res["s"]
-        if sequence_no is not None:
-            info = get()
-            if info["sequence"]:
-                if sequence_no > info["sequence"]:
-                    data = {
-                        "sequence": sequence_no
-                    }
-                    save(data)
-            else:
-                data = {
-                    "sequence": sequence_no
-                }
-                save(data)
-                # TODO: then maye be resume con.
+        sequence = event["s"]
+        if sequence:
+            save({"sequence": sequence})
             
-        if event == "GUILD_CREATE":
-            guild_id = res["d"]["id"]
+        if event_name == "GUILD_CREATE":
+            guild_id = event["d"]["id"]
             data = { "guild_id": guild_id }
             save(data)
 
-        if event == "READY":
-            session_id = res["d"]["session_id"]
-            data = {"session_id":session_id}
+        if event_name == "READY":
+            session_id = event["d"]["session_id"]
+            resume_gateway_url = event['d']['resume_gateway_url']
+            data = {"session_id":session_id, "resume_gateway_url": resume_gateway_url }
             save(data)
             msg.create_message()
 
-        if event == "INTERACTION_CREATE":
-            msg.send_reply(res)
+        if event_name == "INTERACTION_CREATE":
+            msg.send_reply(event)
+
+        
+
+
 
 
 
