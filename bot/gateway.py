@@ -1,12 +1,11 @@
 
-from message import Message
+from interactions import Interaction
 from info import get, save
 from dotenv import load_dotenv
 import websockets
 import asyncio
 import os
 import json
-
 
 load_dotenv()
 
@@ -17,7 +16,6 @@ class Gateway:
         self.message = asyncio.Queue()
         self.heartbeat = 1
         self.session_id = None 
-        
         
     async def connect(self):
         info = get()
@@ -33,7 +31,6 @@ class Gateway:
             await send 
             await recv
             
-
     async def send(self, ws):
         while True:
             msg = json.dumps(await self.message.get())
@@ -67,7 +64,7 @@ class Gateway:
                 "seq": 0,
             }
         }
-        #sequence number from last event recieved
+        # sequence number from last event recieved
         await self.message.put(resume)
 
     def run(self):
@@ -80,7 +77,7 @@ class Gateway:
     
     async def gateway_event_handler(self, event):
         event_name = event["t"]
-        msg = Message()
+        interaction = Interaction()
 
         if event["op"] == 10:
             info = get()
@@ -118,15 +115,10 @@ class Gateway:
             resume_gateway_url = event['d']['resume_gateway_url']
             data = {"session_id":session_id, "resume_gateway_url": resume_gateway_url }
             save(data)
-            msg.create_message()
+            interaction.create_message()
 
         if event_name == "INTERACTION_CREATE":
-            msg.send_reply(event)
-
-        
-
-
-
+            interaction.response(event)
 
 
 if __name__ == "__main__":

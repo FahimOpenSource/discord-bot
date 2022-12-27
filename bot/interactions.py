@@ -1,4 +1,3 @@
-
 from role import Role
 import json
 import requests
@@ -9,14 +8,14 @@ load_dotenv()
 
 API_URL = "https://discord.com/api/v9"
 
-class Message():
+
+class Interaction:
     def __init__(self):
         self.token = os.getenv("TOKEN")
         self.headers = {"Authorization": f"Bot {self.token}", "Content-Type": "application/json"}
 
     def create_message(self):
         # Before that check_msg()
-        self.url = f"{API_URL}/channels/967526705088565248/messages"
         # Make the url get channel id from Guild create payload
 
         # Roles
@@ -44,7 +43,7 @@ class Message():
                             "label": "PlayStation",
                             "style": 2,
                             "custom_id": "playstation",
-                            
+
                         },
                         {
                             "type": 2,
@@ -52,7 +51,7 @@ class Message():
                             "style": 2,
                             "custom_id": "switch",
                         },
-                        
+
                         {
                             "type": 2,
                             "label": "Mobile",
@@ -63,24 +62,64 @@ class Message():
                 }
             ]
         }
-        
+
         msg = json.dumps(message)
-        res = requests.post(self.url,data=msg, headers=self.headers)
+        url = f"{API_URL}/channels/967526705088565248/messages"
+        res = requests.post(url, data=msg, headers=self.headers)
         res = json.loads(res.text)
-        
+
         print(f'{res}\n')
 
-
     def check_msg(self):
-
         pass
-    
-    def send_reply(self, event):
-        role = Role()
-        role.set_role(event)
-            # this means some one clicked on a botton to choose a role 
-            #  select a role 
-            # return 
-            # then respond
 
-    
+    def response(self, event):
+        role = Role()
+        bool = role.set_role(event)
+        role_id = event['d']['data']['custom_id']
+
+        interaction_id = event['d']['id']
+        interaction_token = event['d']['token']
+
+        url = f"{API_URL}/interactions/{interaction_id}/{interaction_token}/callback"
+
+        if bool == True:
+            # when role has been added 
+            response = {
+                "type":4,
+                "data":{
+                    "tts":False,
+                    "content": f"👍 You've now got the role `{role_id}`!",
+                    "flags":64,
+                    "embeds": [],
+                    "allowed_mentions": { "parse": [] }
+                }
+            }
+            msg = json.dumps(response)
+            res = requests.post(url, data=msg, headers=self.headers)
+            res = json.loads(res.text)
+
+            print(f'{res}\n')
+
+        else:
+            # when role has been removed
+            response = {
+                "type":4,
+                "data":{
+                    "tts":False,
+                    "content": f"🙃 I've removed the role `{role_id}` from you!",
+                    "flags":64,
+                    "embeds": [],
+                    "allowed_mentions": { "parse": [] }
+                }
+            }
+            msg = json.dumps(response)
+            res = requests.post(url, data=msg, headers=self.headers)
+            res = json.loads(res.text)
+
+            print(f'{res}\n')
+
+# this means some one clicked on a botton to choose a role
+#  select a role
+# return
+# then respond

@@ -9,6 +9,7 @@ load_dotenv()
 
 API_URL = "https://discord.com/api/v9"
 
+
 class Role:
     def __init__(self):
         info = get()
@@ -18,48 +19,48 @@ class Role:
 
     def set_role(self, event):
 
-        #Get guild roles
+        # Get guild roles
         url = f"{API_URL}/guilds/{self.guild_id}/roles"
         res = requests.get(url, headers=self.headers)
         print(f'{res.text}\n')
         roles = json.loads(res.text)
 
-        #Check if roles include the given
+        # Check if roles include the given
         id = event['d']['data']['custom_id']
         for role in roles:
             name = role["name"]
             if name == id:
-                self.assign_role(event, role)
+                return self.assign_role(event, role)
             else:
-                #The role doesn't exist
-                #Send message : Role unavailable
+                # The role doesn't exist
+                # Send message : Role unavailable
                 pass
     
     def assign_role(self,event,role):
         role_id = role['id']
         user_id = event['d']['member']['user']['id']
 
-        #get member object 
+        # get member object
         url = f"{API_URL}/guilds/{self.guild_id}/members/{user_id}"
         res = requests.get(url, headers=self.headers)
         print(f'{res.text}\n')
         member = json.loads(res.text)
         print(f'nnnnnnnnnnnnn{role}\n')
 
-        #removing role
+        # removing role
         if role['id'] in member["roles"]:
             url = f"{API_URL}/guilds/{self.guild_id}/members/{user_id}/roles/{role_id}"
             res = requests.delete(url, headers=self.headers)
             print(f'{res.text}\n')
             assert res.status_code == 204
-            # send confirmation message through Message class
+            return False
             
         else:
-            #this is adding role to user 
+            # adding role to user
             url = f"{API_URL}/guilds/{self.guild_id}/members/{user_id}/roles/{role_id}"
             res = requests.put(url, headers=self.headers)
             print(f'{res.text}\n')
             assert res.status_code == 204
-            # send confirmation message through Message class
+            return True 
         
   
