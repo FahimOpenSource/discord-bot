@@ -66,12 +66,9 @@ class Interaction:
         msg = json.dumps(message)
         url = f"{API_URL}/channels/967526705088565248/messages"
         res = requests.post(url, data=msg, headers=self.headers)
-        res = json.loads(res.text)
+        res = res.text
 
-        print(f'{res}\n')
-
-    def check_msg(self):
-        pass
+        print(f'from msg {res}\n')
 
     def response(self, event):
         role = Role()
@@ -86,40 +83,35 @@ class Interaction:
         if bool == True:
             # when role has been added 
             response = {
-                "type":4,
-                "data":{
-                    "tts":False,
+                "type": 4,
+                "data": {
+                    "tts": False,
                     "content": f"👍 You've now got the role `{role_id}`!",
-                    "flags":64,
+                    "flags": 64,
                     "embeds": [],
-                    "allowed_mentions": { "parse": [] }
+                    "allowed_mentions": {"parse": []}
                 }
             }
             msg = json.dumps(response)
             res = requests.post(url, data=msg, headers=self.headers)
             res = json.loads(res.text)
 
-            print(f'{res}\n')
+            print(f'from r1 {res}\n')
 
         else:
             # when role has been removed
             response = {
-                "type":4,
-                "data":{
-                    "tts":False,
+                "type": 4,
+                "data": {
+                    "tts": False,
                     "content": f"🙃 I've removed the role `{role_id}` from you!",
-                    "flags":64,
+                    "flags": 64,
                     "embeds": [],
-                    "allowed_mentions": { "parse": [] }
+                    "allowed_mentions": {"parse": []}
                 }
             }
             msg = json.dumps(response)
             res = requests.post(url, data=msg, headers=self.headers)
             res = json.loads(res.text)
 
-            print(f'{res}\n')
-
-# this means some one clicked on a botton to choose a role
-#  select a role
-# return
-# then respond
+            print(f'from r2 {res}\n')

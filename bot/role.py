@@ -22,7 +22,7 @@ class Role:
         # Get guild roles
         url = f"{API_URL}/guilds/{self.guild_id}/roles"
         res = requests.get(url, headers=self.headers)
-        print(f'{res.text}\n')
+        print(f'from setrole {res.text}\n')
         roles = json.loads(res.text)
 
         # Check if roles include the given
@@ -36,22 +36,25 @@ class Role:
                 # Send message : Role unavailable
                 pass
     
-    def assign_role(self,event,role):
+    def assign_role(self, event, role):
         role_id = role['id']
         user_id = event['d']['member']['user']['id']
 
         # get member object
         url = f"{API_URL}/guilds/{self.guild_id}/members/{user_id}"
         res = requests.get(url, headers=self.headers)
-        print(f'{res.text}\n')
+        print(f'user {res.text}\n')
         member = json.loads(res.text)
-        print(f'nnnnnnnnnnnnn{role}\n')
+
+        print(f'role selected by user {role}\n')
+
+        # does program check whether user has role before removing or adding it
 
         # removing role
         if role['id'] in member["roles"]:
             url = f"{API_URL}/guilds/{self.guild_id}/members/{user_id}/roles/{role_id}"
             res = requests.delete(url, headers=self.headers)
-            print(f'{res.text}\n')
+            print(f'role deleted{res.text}\n')
             assert res.status_code == 204
             return False
             
@@ -59,7 +62,7 @@ class Role:
             # adding role to user
             url = f"{API_URL}/guilds/{self.guild_id}/members/{user_id}/roles/{role_id}"
             res = requests.put(url, headers=self.headers)
-            print(f'{res.text}\n')
+            print(f'role added {res.text}\n')
             assert res.status_code == 204
             return True 
         

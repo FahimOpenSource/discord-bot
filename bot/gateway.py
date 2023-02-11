@@ -22,7 +22,7 @@ class Gateway:
         gateway_url = info["gateway_url"]
         async with websockets.connect(gateway_url) as websocket:
             event = await websocket.recv()
-            print(f'{event}\n')
+            print(f'from connect {event}\n')
             event = json.loads(event)
             gateway_event_handler = asyncio.create_task(self.gateway_event_handler(event))
             send = asyncio.create_task(self.send(websocket))
@@ -40,7 +40,7 @@ class Gateway:
         while True:
             try:
                 event = await ws.recv()
-                print(f'{event}\n')
+                print(f'from recv {event}\n')
                 event = json.loads(event)
                 gateway_event_handler = asyncio.create_task(self.gateway_event_handler(event))
                 await gateway_event_handler
@@ -107,13 +107,13 @@ class Gateway:
             
         if event_name == "GUILD_CREATE":
             guild_id = event["d"]["id"]
-            data = { "guild_id": guild_id }
+            data = {"guild_id": guild_id}
             save(data)
 
         if event_name == "READY":
             session_id = event["d"]["session_id"]
             resume_gateway_url = event['d']['resume_gateway_url']
-            data = {"session_id":session_id, "resume_gateway_url": resume_gateway_url }
+            data = {"session_id": session_id, "resume_gateway_url": resume_gateway_url}
             save(data)
             interaction.create_message()
 
